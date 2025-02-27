@@ -4,9 +4,9 @@ sidebar_position: 2
 
 # Hubspot
 
-Subsets support syncing data to Hubspot using the [Start a new import](https://api.hubapi.com/crm/v3/imports/) - `crm/v3/imports` API endpoint.
+Subsets supports syncing data to Hubspot using the [Start a new import](https://api.hubapi.com/crm/v3/imports/) - `crm/v3/imports` API endpoint.
 
-The following four Custom Contact Properties will be created in your hubspot:
+The following four Custom Contact Properties will be created in HubSpot:
 ```
 {
   'subsets_experiment_id',
