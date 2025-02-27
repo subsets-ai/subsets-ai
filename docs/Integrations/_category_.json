@@ -1,0 +1,8 @@
+{
+  "label": "Integrations",
+  "position": 2,
+  "link": {
+    "type": "generated-index",
+    "description": "Subsets support adding attributes to the following systems."
+  }
+}
