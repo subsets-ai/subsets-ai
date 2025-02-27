@@ -5,5 +5,5 @@ slug: /
 
 # Overview
 
-If want to hear more about Subsets, head over to [Subsets.com](subsets.com)
+If want to hear more about Subsets, head over to [Subsets.com](https://subsets.com)
 
