@@ -26,6 +26,10 @@ This command generates static content into the `build` directory and can be serv
 
 ### Deployment
 
+Using Github Actions
+Just push/merge to main branch...
+
+
 Using SSH:
 
 ```
