@@ -20,10 +20,11 @@ The following four User Profile Attributes can be created in Braze:
 
 1. Create a REST API key in Braze by following [this guide](https://braze.com/docs/api/basics/#creating-rest-api-keys).
 2. Add scopes listed in the [Required permissions](#req_perm).
-3. Share the API key with us.
+3. Share the dev and prod REST endpoint that have been assigned your org. [See Endpoints](https://www.braze.com/docs/api/basics/#endpoints)
+4. Share the API key with us.
 
 :::note
-Calls to the endpoint will be batched, and Subsets can update 225 user profile attributes in one call, but make sure that your [API rate limits](https://www.braze.com/docs/api/api_limits/) allows for ~200 (depending on your org size) calls from Subsets per day
+Calls to the endpoint will be batched, and Subsets can update 75 user profile attributes in one call, but make sure that your [API rate limits](https://www.braze.com/docs/api/api_limits/) allows for ~200 (depending on your org size) calls from Subsets per day
 :::
 
 ### <a name="req_perm"></a> Required permissions
