@@ -18,7 +18,7 @@ Generally, Subsets needs following data:
 | campaign_name | name the campaign/flow/sequence | jan_test_newspaper |  |
 | email_subject | email subject line | "Welcome to acme newspaper" |  |
 
-Subsets uses this data to verify that a subscription in an experiment has indeed received a campaign/treatment and analyses the response. 
+Subsets use this data to verify that a subscription in an experiment has received a campaign or treatment and to analyze the response. 
 
 ## Hubspot
 Feedback data from Hubsport should be the [Hubspot email events](https://developers.hubspot.com/beta-docs/guides/api/analytics-and-events/email-analytics#email-events) where recipient (email) as has been removed and a suitable subscription or customer identifier has been added. (if possible alos include the `campaign_name` and `email_subject_line`).
