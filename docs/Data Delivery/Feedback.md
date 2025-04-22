@@ -21,13 +21,25 @@ Generally, Subsets needs following data:
 Subsets use this data to verify that a subscription in an experiment has received a campaign or treatment and to analyze the response. 
 
 ## Hubspot
-Feedback data from Hubsport should be the [Hubspot email events](https://developers.hubspot.com/beta-docs/guides/api/analytics-and-events/email-analytics#email-events) where recipient (email) as has been removed and a suitable subscription or customer identifier has been added. (if possible alos include the `campaign_name` and `email_subject_line`).
-Below is an example of the required fields from hubspot: 
+Feedback data from Hubsport is the [Hubspot email events](https://developers.hubspot.com/beta-docs/guides/api/analytics-and-events/email-analytics#email-events) where recipient (email) as has been removed and a suitable identifier has been added. (if possible alos include the `campaign_name` and `email_subject_line`).
+The following fields are required:
+- type
+- emailCampaignId
+- created
+- recipient (replaced with suitable identifier)
+
+and `type` include the following events:
+- SENT
+- DELIVERED
+- BOUNCE
+- OPEN
+- CLICK
+
+example:
 ```
 {
     "created": 1401715744000,
     "emailCampaignId": 13054799,
-    "id": "e4e7b45d-83ff-3faa-81a5-d241a3ce6e31",
     "recipient": <REMOVED and replace with internal id>,
     "type": "DELIVERED"
 },
