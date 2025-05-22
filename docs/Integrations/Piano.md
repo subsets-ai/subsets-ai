@@ -12,7 +12,8 @@ The following four Custom Fields in Piano ID will be created:
   'subsets_experiment_id',
   'subsets_experiment_added_at',
   'subsets_experiment_name',
-  'subsets_subscriber_churn_risk'
+  'subsets_subscriber_churn_risk',
+  'subsets_experiment_assignment'
 }
 ```
 
@@ -20,8 +21,9 @@ The following four Custom Fields in Piano ID will be created:
 Provide the following for both your production and sandbox environments.
 1. Share the Application Id and API Token from your Piano dashboard.
 2. Share your base urls (eg. `api.piano.io`, `sandbox.piano.io`).
+3. Add the Custom Fields specified in [Custom Fields](#custom_fields).
 
-## Custom fields
+### <a name="custom_fields"></a> Custom Fields 
 Please add the following custom fields for users (https://docs.piano.io/custom-fields-in-piano-id/#createfields). 
 
 | Field Id                      | Title                                                                  | FieldType | Description                                                                                                                                                        |
