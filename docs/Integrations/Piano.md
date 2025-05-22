@@ -21,7 +21,7 @@ Provide the following for both your production and sandbox environments.
 1. Share the Application Id and API Token from your Piano dashboard.
 2. Share your base urls (eg. `api.piano.io`, `sandbox.piano.io`).
 
-## Custom contacts properties
+## Custom fields
 Please add the following custom fields for users (https://docs.piano.io/custom-fields-in-piano-id/#createfields). 
 
 | Field Id                      | Title                                                                  | FieldType | Description                                                                                                                                                        |
