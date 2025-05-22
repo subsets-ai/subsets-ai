@@ -12,7 +12,8 @@ The following four Custom Contact Properties will be created in HubSpot:
   'subsets_experiment_id',
   'subsets_experiment_added_at',
   'subsets_experiment_name',
-  'subsets_subscriber_churn_risk'
+  'subsets_subscriber_churn_risk',
+  'subsets_experiment_assignment'
 }
 ```
 
