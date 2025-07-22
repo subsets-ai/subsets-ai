@@ -4,7 +4,7 @@ sidebar_position: 5
 
 # OneSignal
 
-Subsets supports syncing data to OneSignal using the [Update user]([https://docs.piano.io/api?endpoint=post~2F~2Fpublisher~2Fuser~2Fupdate](https://documentation.onesignal.com/reference/update-user)) `/apps/{appId}/users/by/external_id/update` API endpoint.
+Subsets supports syncing data to OneSignal using the [Update user](https://documentation.onesignal.com/reference/update-user) `/apps/{appId}/users/by/external_id/update` API endpoint.
 
 The following Subsets specific tags in OneSignal will be created on each user:
 ```
