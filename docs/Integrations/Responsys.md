@@ -21,5 +21,5 @@ The following fields will be added to members in an experiment:
 Provide the following for both your production and sandbox environments.
 1. Create a new [Rest API user](https://docs.oracle.com/en/cloud/saas/marketing/responsys-develop/API/GetStarted/Authentication/auth-create-api-user.htm). Assign role 'List Web Services Manager'.
 2. Share the username and password for the Rest API user in the Subsets app.
-3. Share your [authentication](https://docs.oracle.com/en/cloud/saas/marketing/responsys-develop/API/GetStarted/Authentication/auth-endpoints-rest.htm) and rest urls (eg. `https://login.responsys.net`, `sandbox.piano.io`).
+3. Share your [authentication](https://docs.oracle.com/en/cloud/saas/marketing/responsys-develop/API/GetStarted/Authentication/auth-endpoints-rest.htm) and rest urls (example. `https://login.responsys.net`).
 
