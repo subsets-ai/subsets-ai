@@ -22,7 +22,7 @@ Subsets supports syncing data to BlueConic using the REST API v2 bulk profile op
 
 2. **Provide Credentials to Subsets**
    - Share the client ID, client secret, and instance URL
-   - Provide access to a test environment or test profiles for validation
+   - Provide access to a test/sandbox environment (if available) and test profiles for validation
 
 ### Required Permissions (scopes)
 | Permission Type           | Description                                    |

@@ -17,4 +17,4 @@ The following four Custom Attributes will be created in Sailthru:
 ```
 
 ## Setup guide
-1. Share API key and secret for both prod and dev. The key can be found by navigating to [Sailthru API Settings.](https://my.sailthru.com/settings/api_postbacks).
+1. Share API key and secret for your production enviroment. The key can be found by navigating to [Sailthru API Settings.](https://my.sailthru.com/settings/api_postbacks).
