@@ -36,13 +36,13 @@ Subsets supports syncing data to BlueConic using the REST API v2 bulk profile op
 
 Subsets creates the following custom profile properties in your BlueConic instance:
 
-| Property Name                 | Property ID                   | Description                                    | Type   |
-|-------------------------------|-------------------------------|------------------------------------------------|--------|
-| subsetsExperimentId           | `subsets_experiment_id`       | Unique identifier for the experiment (external experiment id) | String |
-| subsetsExperimentAddedAt      | `subsets_experiment_added_at` | Timestamp when user was added to experiment    | String |
-| subsetsExperimentName         | `subsets_experiment_name`     | Name of the experiment                         | String |
+| Property Name                 | Property ID                     | Description                                    | Type   |
+|-------------------------------|---------------------------------|------------------------------------------------|--------|
+| subsetsExperimentId           | `subsets_experiment_id`         | Unique identifier for the experiment (external experiment id) | String |
+| subsetsExperimentAddedAt      | `subsets_experiment_added_at`   | Timestamp when user was added to experiment    | String |
+| subsetsExperimentName         | `subsets_experiment_name`       | Name of the experiment                         | String |
 | subsetsSubscriberChurnRisk    | `subsets_subscriber_churn_risk` | Probability subscriber will churn within 30 days | String |
-| subsetsExperimentAssignment   | Not created via API           | Treatment or control group assignment          | String |
+| subsetsExperimentAssignment   | `subsets_experiment_assignment` | Treatment or control group assignment          | String |
 
 ### Profile Property Configuration
 
