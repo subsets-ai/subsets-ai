@@ -36,12 +36,28 @@ Subsets supports syncing data to BlueConic using the REST API v2 bulk profile op
 
 Subsets creates the following custom profile properties in your BlueConic instance:
 
-| Property Name                 | Description                                    | Type   |
-|-------------------------------|------------------------------------------------|--------|
-| subsetsExperimentId           | Unique identifier for the experiment           | String |
-| subsetsExperimentAddedAt      | Timestamp when user was added to experiment    | String |
-| subsetsExperimentName         | Name of the experiment                         | String |
-| subsetsSubscriberChurnRisk    | Probability subscriber will churn within 30 days | String |
-| subsetsExperimentAssignment   | Treatment or control group assignment          | String |
+| Property Name                 | Property ID                   | Description                                    | Type   |
+|-------------------------------|-------------------------------|------------------------------------------------|--------|
+| subsetsExperimentId           | `subsets_experiment_id`       | Unique identifier for the experiment (external experiment id) | String |
+| subsetsExperimentAddedAt      | `subsets_experiment_added_at` | Timestamp when user was added to experiment    | String |
+| subsetsExperimentName         | `subsets_experiment_name`     | Name of the experiment                         | String |
+| subsetsSubscriberChurnRisk    | `subsets_subscriber_churn_risk` | Probability subscriber will churn within 30 days | String |
+| subsetsExperimentAssignment   | Not created via API           | Treatment or control group assignment          | String |
+
+### Profile Property Configuration
+
+Each profile property is configured with these settings:
+
+| Setting | Value            | Description |
+|---------|------------------|-------------|
+| `availableForSegmentation` | `true`           | Available as filter to create segments |
+| `canRead` | `true`           | Browser can retrieve the value |
+| `canWrite` | `true`           | Browser can write new values |
+| `description` | Set per property | Descriptive text for the property |
+| `id` | Generated        | Unique object identifier |
+| `name` | Property name    | Human-readable name |
+| `precision` | `2`              | Decimal precision (default) |
+| `showInUI` | `true`           | Visible in segments UI |
+| `tags` | `["subsets"]`    | Tagged for organization |
 
 Note: All properties are prefixed with `subsets` to avoid conflicts with existing profile properties in your BlueConic instance.
