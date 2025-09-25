@@ -19,6 +19,7 @@ Subsets supports syncing data to BlueConic using the REST API v2 bulk profile op
      - **Grant Type:** Client Credentials (for server-to-server communication)
      - **Scopes:** Select profile read/write and profile properties read/write permissions
    - Save the application to generate your `client_id` and `client_secret`
+   - Make sure that user which the new external application runs on behalf of has "Profiles", "Edit Profiles", and "Properties" permissions.
 
 2. **Provide Credentials to Subsets**
    - Share the client ID, client secret, and instance URL
