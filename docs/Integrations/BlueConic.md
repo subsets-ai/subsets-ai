@@ -26,12 +26,13 @@ Subsets supports syncing data to BlueConic using the REST API v2 bulk profile op
    - Provide access to a test/sandbox environment (if available) and test profiles for validation
 
 ### Required Permissions (scopes)
-| Permission Type           | Description                                    |
-|---------------------------|------------------------------------------------|
-| `profiles.read`           | Read access to profile data                    |
-| `profiles.write`          | Write access to update profile data           |
-| `profile_properties.read` | Read access to profile property definitions    |
-| `profile_properties.write`| Write access to create profile properties     |
+| Permission Type                           | Description                                    |
+|-------------------------------------------|------------------------------------------------|
+| `profiles.read`                           | Read access to profile data                    |
+| `profiles.write`                          | Write access to update profile data           |
+| `profile_properties.read`                 | Read access to profile property definitions    |
+| `profile_properties.write`                | Write access to create profile properties     |
+| `PII (Personal Identifyable Information)` | Write access to create profile properties     |
 
 ## Custom Profile Properties
 
