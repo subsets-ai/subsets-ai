@@ -2,7 +2,7 @@
 sidebar_position: 2
 ---
 
-# Hubspot
+# Data
 
 Subsets supports syncing data to Hubspot using the [Start a new import](https://api.hubapi.com/crm/v3/imports/) - `crm/v3/imports` API endpoint.
 
@@ -28,14 +28,20 @@ Make sure that your api call rate limit allows for 5 calls from Subsets per day
 :::
 
 ### <a name="req_perm"></a> Required permissions
-| Scopes   |
-| --- |
-| `crm.objects.contacts.read`   |
-| `crm.objects.custom.read`     |
-| `crm.objects.custom.write`    |
-| `crm.schemas.contacts.read`   |
-| `crm.schemas.contacts.write`  |
-| `crm.import`                  |
+| Scope                        |
+|------------------------------|
+| `crm.objects.contacts.read`  |
+| `crm.objects.custom.read`    |
+| `crm.objects.custom.write`   |
+| `crm.schemas.contacts.read`  |
+| `crm.schemas.contacts.write` |
+| `crm.import`                 |
+| `marketing.campaigns.read`   | 
+| `marketing.campaigns.write`  | 
+| `crm.lists.read`             | 
+| `crm.lists.write`            | 
+| `content`                    | 
+
 
 
 ## Custom contacts properties
