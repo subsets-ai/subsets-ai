@@ -2,7 +2,7 @@
 sidebar_position: 2
 ---
 
-# Data
+# HubSpot
 
 Subsets supports syncing data to Hubspot using the [Start a new import](https://api.hubapi.com/crm/v3/imports/) - `crm/v3/imports` API endpoint.
 

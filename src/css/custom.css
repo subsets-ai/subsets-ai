@@ -28,3 +28,13 @@
   --ifm-color-primary-lightest: #4fddbf;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 }
+
+/* Sidebar section titles */
+.sidebar-title {
+  font-weight: 700;
+  font-size: 12px;
+  color: gray;
+  padding-top: 1rem;
+  border-top: 1px solid gray;
+}
+
