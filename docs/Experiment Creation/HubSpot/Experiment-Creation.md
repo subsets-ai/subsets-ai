@@ -26,8 +26,8 @@ and pasting the campaign URL during the experiment creation Flow. The Demo video
 graph LR;
     A["Input External ID<br/>(subsets_experiment_id)"]:::userStep
     B["Paste Campaign URL"]:::userStep
-    C["List (Segment) Auto-Inserted into HubSpot"]:::subsetsStep
-    D["Experiment Linked to HubSpot Campaign"]:::subsetsStep
+    C["List (Segment)<br/>Auto-Inserted)<br/> into HubSpot"]:::subsetsStep
+    D["Experiment Linked to<br/>HubSpot Campaign"]:::subsetsStep
 
     A --> B --> C --> D
 
