@@ -3,7 +3,7 @@
 Subsets handles the complexity which is required to link an experiment to a segment of users and
 the respective Knock message type.
 
-This page will be a concise guide on how to setup an experiment to a Sailthru flow. Below is a high level overview on
+This page will be a concise guide on how to setup an experiment to a Knock campaign. Below is a high level overview on
 the steps
 taken to create an experiment, and link that to the correct message campaign. As shown, you are only responsible for writing the key of the message. The Demo video will show this in practice.
 
