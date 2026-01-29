@@ -22,11 +22,9 @@ To enable OAuth for your organization:
    - Google: your email domain (e.g., `company.com`)
    - Microsoft: your Azure AD Tenant ID
 
-2. **Allowlisting** - Subsets allowlists your domain/tenant so only users from your organization can use OAuth login.
+2. **IT admin consent (may be required)** - Your IT admin may need to approve/consent to the Subsets application in your identity provider's admin console.
 
-3. **IT admin consent (may be required)** - Your IT admin may need to approve/consent to the Subsets application in your identity provider's admin console.
-
-4. **Platform access approval** - Even after a successful OAuth login, users may require approval by a Subsets admin before gaining access. This helps prevent unintentionally granting access to a large number of users.
+3. **Platform access approval** - Even after a successful OAuth login, users will require approval by an admin before gaining access.
 
 ## Notes
 
