@@ -1,0 +1,31 @@
+---
+sidebar_position: 2
+sidebar_label: Sailthru
+---
+
+import SchemaTable from '@site/src/components/SchemaTable';
+import { sailthruSchema } from '@site/src/schemas/sailthru';
+
+# Sailthru
+
+Sailthru feedback data comes from [Sailthru Connect Event Stream](https://getstarted.meetmarigold.com/engagebysailthru/Content/analytics/stc/event-stream.html), which provides granular event-level data for email campaigns and automated messaging.
+
+Subsets requires the following tables and fields from Sailthru Connect:
+
+## Campaign Events
+
+<SchemaTable schema={sailthruSchema.campaign_sends} defaultOpen />
+<SchemaTable schema={sailthruSchema.campaign_opens} />
+<SchemaTable schema={sailthruSchema.campaign_clicks} />
+
+## Triggered Events
+
+<SchemaTable schema={sailthruSchema.triggered_sends} />
+<SchemaTable schema={sailthruSchema.triggered_opens} />
+<SchemaTable schema={sailthruSchema.triggered_clicks} />
+<SchemaTable schema={sailthruSchema.triggered_bounces} />
+
+## Lookup Tables
+
+<SchemaTable schema={sailthruSchema.campaigns} />
+<SchemaTable schema={sailthruSchema.lifecycle_optimizer_flow} />
