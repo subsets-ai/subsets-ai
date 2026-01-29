@@ -11,7 +11,7 @@ Google Analytics 4 behavioral data tracks your subscribers' interactions with yo
 
 GA4 data can be delivered in two formats - we accept either:
 
-1. **Raw nested format** - Native BigQuery export structure with RECORD types (e.g., `events_YYYYMMDD` tables). Simply provide the full GA4 export tables - no field extraction required.
+1. **Raw nested format** - Native BigQuery export structure with RECORD types. Simply provide the full GA4 export tables - no field extraction required.
 2. **Flattened format** - Pre-processed tables with unnested event parameters and properties as individual columns.
 
 Both formats are acceptable. Choose based on your data pipeline capabilities and preferences.
