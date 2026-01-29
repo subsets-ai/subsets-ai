@@ -90,22 +90,9 @@ export const sailthruSchema = {
     name: "Campaigns",
     fields: [
       { name: "campaign_id", type: "STRING" },
-      { name: "client_id", type: "INTEGER" },
       { name: "template_id", type: "INTEGER" },
       { name: "name", type: "STRING" },
-      { name: "from_name", type: "STRING" },
-      { name: "from_email", type: "STRING" },
-      { name: "replyto_email", type: "STRING" },
-      { name: "subject", type: "STRING" },
       { name: "list_name", type: "STRING" },
-      { name: "data_feed_url", type: "STRING" },
-      { name: "preheader", type: "STRING" },
-      { name: "schedule_time", type: "TIMESTAMP" },
-      { name: "report_email", type: "STRING" },
-      { name: "suppress_list", type: "STRING" },
-      { name: "email_hour_range", type: "STRING" },
-      { name: "start_time", type: "TIMESTAMP" },
-      { name: "create_time", type: "TIMESTAMP" },
     ]
   },
   lifecycle_optimizer_flow: {
