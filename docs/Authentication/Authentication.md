@@ -12,19 +12,29 @@ Users join via an email invitation from an existing team member. After receiving
 
 Organizations can optionally disable invitations if they prefer to manage login via OAuth only.
 
-## Google / Microsoft (OAuth)
+## Google (OAuth)
 
-OAuth login allows users to authenticate using their existing Google or Microsoft accounts.
+Authenticate using existing Google accounts.
 
-To enable OAuth for your organization:
+**Setup:**
+1. Provide your email domain (e.g., `company.com`)
+2. Designate initial admin by providing their email address
+3. IT admin consent may be required in Google Workspace admin console
 
-1. **Provide your organization identifier**
-   - Google: your email domain (e.g., `company.com`)
-   - Microsoft: your Azure AD Tenant ID
+**User approval:** Admins approve other users from the same email domain.
 
-2. **IT admin consent (may be required)** - Your IT admin may need to approve/consent to the Subsets application in your identity provider's admin console.
+## Microsoft (OAuth)
 
-3. **Platform access approval** - Even after a successful OAuth login, users will require approval by an admin before gaining access.
+Authenticate using existing Microsoft accounts.
+
+**Setup:**
+1. Provide your Azure AD Tenant ID
+2. Designate initial admin by providing their `oid` (Object ID)
+3. IT admin consent may be required in Azure AD admin console
+
+**User approval:** Admins approve other users from the same tenant.
+
+**Fallback:** If `oid` is unavailable, users can be manually approved by a Subsets super user.
 
 ## Notes
 
