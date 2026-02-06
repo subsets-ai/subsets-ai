@@ -1,0 +1,71 @@
+---
+sidebar_position: 1
+---
+
+import SchemaTable from '@site/src/components/SchemaTable';
+import { pianoSchema } from '@site/src/schemas/piano';
+
+# Piano
+
+Piano subscription data tracks the lifecycle of your subscriptions, from sign-up through renewals, cancellations, and expirations. [Download schema](/schemas/piano_dbt_schema.yml) (dbt format).
+
+## Data Sources
+
+Piano subscription data can be delivered from two sources:
+
+1. **Piano API Subscriptions** - Current state snapshot of all subscriptions
+2. **Piano Subscriber Event Stream** - Lifecycle events (created, renewed, cancelled, expired, etc.)
+
+We need both sources for complete subscription tracking.
+
+:::info Piano Data Format
+We require the **dedicated subscription event stream**, not Piano Analytics v2 behavioral events. Piano Analytics v2 includes all page views and user interactions with subscription data embedded as properties. For Subsets retention modeling, we need only the subscription lifecycle events in the format described below.
+:::
+
+## Piano API Subscriptions
+
+<SchemaTable schema={pianoSchema.piano_api_subscriptions} defaultOpen />
+
+Current state of all subscriptions. This table provides a snapshot view of subscription status, pricing, and renewal settings.
+
+## Piano Subscriber Event Stream
+
+<SchemaTable schema={pianoSchema.piano_subscriber_event_stream} />
+
+Lifecycle events tracking subscription changes over time. This append-only log captures all subscription actions and state transitions.
+
+**Common subscription_action values:**
+
+- `Created` - New subscription
+- `Renewed` - Successful renewal
+- `Expired` - Subscription ended
+- `Canceled` - Cancellation processed
+- `TrialStarted` - Trial period began
+- `TrialEnded` - Trial period completed
+- `PaymentFailed` - Payment failure
+- `Upgraded` - Plan upgrade
+- `Downgraded` - Plan downgrade
+- `Resumed` - Subscription reactivated
+- `Auto-renew disabled` - Auto-renewal turned off
+- `Auto-renew enabled` - Auto-renewal turned on
+
+**Note on term_type filtering:** Only `payment` and `dynamic` term types are typically used in analytics models. Gift subscriptions and other term types are generally excluded.
+
+## Data Filtering
+
+When delivering Piano data, please:
+
+- **Exclude test/internal users**: Filter out records where `is_internal_user = true`
+- **Hash email addresses**: Use `user_email_hash_sha256` instead of plain email addresses
+
+## Data Synchronization
+
+We recommend including:
+- **Sync timestamp field**: A timestamp indicating when the data was synced (e.g., `_fivetran_synced`, `synced_at`)
+- **Timezone normalization**: Convert all timestamps to UTC using `convert_timezone('UTC', timestamp_field)`
+
+Please inform the Subsets team of your partitioning column and sync timestamp field names.
+
+## Reference
+
+- [Piano API Documentation](https://docs.piano.io)
