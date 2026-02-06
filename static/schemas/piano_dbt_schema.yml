@@ -1,0 +1,70 @@
+version: 2
+
+sources:
+  - name: piano
+    tables:
+      - name: piano_api_subscriptions
+        columns:
+          - name: subscription_id
+            data_type: string
+          - name: user_id
+            data_type: string
+          - name: started_at
+            data_type: timestamp
+          - name: billing_period
+            data_type: string
+          - name: subscription_status
+            data_type: string
+          - name: term_type
+            data_type: string
+          - name: regular_price
+            data_type: float
+          - name: autorenew
+            data_type: boolean
+          - name: autorenew_disabled_at
+            data_type: timestamp
+          - name: expiry_reason
+            data_type: string
+
+      - name: piano_subscriber_event_stream
+        columns:
+          - name: subscription_id
+            data_type: string
+          - name: user_id
+            data_type: string
+          - name: event_timestamp
+            data_type: timestamp
+          - name: subscription_action
+            data_type: string
+          - name: event_name
+            data_type: string
+          - name: resource_name
+            data_type: string
+          - name: next_billed_at
+            data_type: timestamp
+          - name: billing_period
+            data_type: string
+          - name: term_type
+            data_type: string
+          - name: term_name
+            data_type: string
+          - name: transaction_value
+            data_type: float
+          - name: trial_period_ended_at
+            data_type: timestamp
+          - name: trial_duration
+            data_type: string
+          - name: billing_country_code
+            data_type: string
+          - name: subscription_period_number
+            data_type: integer
+          - name: payment_mode
+            data_type: string
+          - name: upgrade_to_subscription_id
+            data_type: string
+          - name: user_email_hash_sha256
+            data_type: string
+          - name: is_internal_user
+            data_type: boolean
+          - name: experience_name
+            data_type: string

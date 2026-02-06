@@ -4,7 +4,17 @@ sidebar_position: 1
 
 # Subscription
 
-This data represents the lifecycle of your subscriptions, including when subscribers sign up, complete trials, enter payment-failure grace periods, cancel, and expire. We need both the current state **and** history of subscriptions, typically stored in one of these formats:
+This data represents the lifecycle of your subscriptions, including when subscribers sign up, complete trials, enter payment-failure grace periods, cancel, and expire. We need both the current state **and** history of subscriptions.
+
+## Platform-Specific Schemas
+
+If you use one of the following subscription management platforms, see the platform-specific documentation:
+
+- [Piano](/Data%20Delivery/Subscription/Piano)
+
+## General Format Options
+
+If you're not using one of the platforms above, subscription data is typically stored in one of these formats:
 
 1. [Billing period-based](/Data%20Delivery/Subscription#billing-period-based)
 2. [Lifecycle event-based](/Data%20Delivery/Subscription#lifecycle-event-based)
