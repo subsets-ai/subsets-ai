@@ -1,0 +1,125 @@
+---
+sidebar_position: 2
+---
+
+import SchemaTable from '@site/src/components/SchemaTable';
+import { subscriptionEventsSchema } from '@site/src/schemas/subscription_events';
+
+# Subscription Events
+
+The subscription events data contract defines a **standardized format** for delivering subscription lifecycle data to Subsets, regardless of your source system.
+
+If your subscription platform is not listed in our [platform-specific guides](/Data%20Delivery/Subscription), use this contract to map your data into the format Subsets expects.
+
+## Schema
+
+<SchemaTable schema={subscriptionEventsSchema.subscription_events} defaultOpen />
+
+Other fields are conditionally required depending on the event type — see [Field Requirements by Event Type](#field-requirements-by-event-type).
+
+## Event Types
+
+Each row represents a single lifecycle event. The `event_type` column must use one of the following standardized values:
+
+| Event Type | Description |
+| --- | --- |
+| `created` | A new subscription was activated. Must be the first event (`event_order = 1`) for every subscription. |
+| `renewed` | A successful payment extended the subscription for another term. Includes both auto-renewals and manual payments. |
+| `expired` | The subscription term ended without renewal. |
+| `cancelled.user` | The customer explicitly requested cancellation. The subscription may still be active until end of term — this marks the **intent** to cancel, not the moment access ends. |
+| `cancelled.system` | The subscription was terminated by the system after all recovery attempts were exhausted, or by admin action / policy enforcement. Not initiated by the customer. |
+| `failed_to_renew.payment_failure` | A renewal payment was attempted and failed. The subscription enters a grace or retry period. Resolves into either `renewed` (recovered) or `cancelled.system` (exhausted). |
+| `changed.plan` | The plan, offer, or product tier changed (upgrade, downgrade, or lateral move). |
+| `changed.auto_renew_off` | Auto-renewal was disabled. The subscription will not renew at end of term. |
+| `changed.auto_renew_on` | Auto-renewal was re-enabled after being previously disabled. |
+| `trial_started` | A free trial period began. |
+
+## Field Requirements by Event Type
+
+The conditional fields are required on transactional events (`created`, `renewed`, `changed.plan`, `trial_started`):
+
+| Field | Requirement |
+| --- | --- |
+| `plan` | **Required** |
+| `price` | **Required** |
+| `renewal_at` | **Required** |
+| `successor_subscription_id` | Only on `changed.plan` |
+
+## Ordering Rules
+
+The `event_order` column must be a deterministic, sequential position (`1, 2, 3, …`) within each subscription's timeline:
+
+- Computed as `row_number()` per `subscription_id`, ordered by `event_at`
+- Source-specific tiebreakers are only needed when multiple events share the same `event_at` — if all timestamps are unique within a subscription, `event_at` alone is sufficient
+- Must start at `1` with no gaps
+- `event_at` must be non-decreasing across the sequence — a later `event_order` cannot have an earlier `event_at`
+
+## Data Integrity Rules
+
+The following invariants are enforced by the contract:
+
+1. **One customer per subscription** — each `subscription_id` maps to exactly one `customer_id`
+2. **First event is `created`** — every subscription's `event_order = 1` must be a `created` event
+3. **Exactly one `created` per subscription** — no duplicates
+4. **No future-dated events** — `event_at` must not exceed the current timestamp
+5. **`renewal_at` not in the past** — when present, `renewal_at ≥ event_at`
+6. **`successor_subscription_id` only on plan changes** — must be null for all other event types, and when populated must reference an existing `subscription_id`
+
+## Example Timeline
+
+A typical subscription lifecycle might look like this:
+
+| subscription_id | event_order | event_at | event_type | plan | price | renewal_at |
+| --- | --- | --- | --- | --- | --- | --- |
+| sub_001 | 1 | 2024-01-01 | `created` | monthly-basic | 9.99 | 2024-02-01 |
+| sub_001 | 2 | 2024-02-01 | `renewed` | monthly-basic | 9.99 | 2024-03-01 |
+| sub_001 | 3 | 2024-03-01 | `failed_to_renew.payment_failure` | | | |
+| sub_001 | 4 | 2024-03-05 | `renewed` | monthly-basic | 9.99 | 2024-04-01 |
+| sub_001 | 5 | 2024-04-01 | `changed.auto_renew_off` | | | |
+| sub_001 | 6 | 2024-04-15 | `cancelled.user` | | | |
+| sub_001 | 7 | 2024-05-01 | `expired` | | | |
+
+## Subscription Migration
+
+Some source systems (e.g., Piano) create a new `subscription_id` when a customer changes plan. Use `successor_subscription_id` to link the old subscription to the new one. This lets Subsets track the customer's full journey across subscription IDs.
+
+**Old subscription (sub_001):**
+
+| subscription_id | event_order | event_at | event_type | plan | price | renewal_at | successor_subscription_id |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| sub_001 | 1 | 2024-01-01 | `created` | monthly-basic | 9.99 | 2024-02-01 | |
+| sub_001 | 2 | 2024-02-01 | `renewed` | monthly-basic | 9.99 | 2024-03-01 | |
+| sub_001 | 3 | 2024-03-15 | `changed.plan` | yearly-premium | 99.99 | 2025-03-15 | sub_002 |
+
+**New subscription (sub_002):**
+
+| subscription_id | event_order | event_at | event_type | plan | price | renewal_at | successor_subscription_id |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| sub_002 | 1 | 2024-03-15 | `created` | yearly-premium | 99.99 | 2025-03-15 | |
+| sub_002 | 2 | 2025-03-15 | `renewed` | yearly-premium | 99.99 | 2026-03-15 | |
+
+The `changed.plan` event on `sub_001` points to `sub_002` via `successor_subscription_id`. The new subscription starts with its own `created` event and independent `event_order` sequence.
+
+:::note
+If your source system keeps the same `subscription_id` across plan changes, you do not need `successor_subscription_id` — just emit a `changed.plan` event with the new plan and price.
+:::
+
+## Mapping from Source Systems
+
+When mapping from your source system:
+
+1. **Identify all subscription lifecycle events** in your data warehouse
+2. **Map each source event** to the standardized `event_type` taxonomy above
+3. **Compute `event_order`** using `row_number()` over `subscription_id` ordered by your event timestamp
+4. **Normalize prices** — monthly-normalized pricing is recommended for consistent comparison across billing periods
+5. **Set `successor_subscription_id`** only when a plan change creates a new subscription ID in the source system
+
+:::tip Platform-Specific Guides
+If you use a supported platform like [Piano](/Data%20Delivery/Subscription/Piano), refer to the platform-specific guide for pre-built mappings.
+:::
+
+## dbt Data Contract
+
+The full contract includes column-level constraints, accepted values, and data tests. Add it to your dbt project to validate your data before delivering to Subsets.
+
+[Download subscription_events_contract.yml](/schemas/subscription_events_contract.yml)

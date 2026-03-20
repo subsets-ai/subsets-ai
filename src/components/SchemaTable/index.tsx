@@ -4,6 +4,7 @@ interface SchemaField {
   name: string;
   type: string;
   description?: string;
+  required?: boolean;
 }
 
 interface SchemaTable {
@@ -36,6 +37,7 @@ export default function SchemaTable({ schema, defaultOpen = false }: SchemaTable
             <tr>
               <th>Field</th>
               <th>Type</th>
+              <th>Required</th>
             </tr>
           </thead>
           <tbody>
@@ -43,6 +45,7 @@ export default function SchemaTable({ schema, defaultOpen = false }: SchemaTable
               <tr key={field.name}>
                 <td><code>{field.name}</code></td>
                 <td>{field.type}</td>
+                <td>{field.required ? 'Always' : 'Conditional'}</td>
               </tr>
             ))}
           </tbody>
