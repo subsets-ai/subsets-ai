@@ -73,12 +73,14 @@ models:
           Deterministic position of this event within the subscription's timeline.
           row_number() per subscription_id, ordered by event_at and source-specific tiebreakers.
           Must produce a unique, chronologically correct sequence per subscription.
-        constraints:
-          - type: not_null
+          Optional — if not provided, (subscription_id, event_at) must be unique so ordering
+          can be derived. Required when multiple events share the same timestamp.
         tests:
-          # Ordering starts at 1
+          # Ordering starts at 1 (when provided)
           - dbt_utils.expression_is_true:
               expression: ">= 1"
+              config:
+                where: "event_order is not null"
       - name: plan
         data_type: string
         description: "Subscription plan name at event time"
@@ -89,7 +91,7 @@ models:
                 where: "event_type in ('created', 'renewed', 'changed.plan', 'trial_started')"
       - name: price
         data_type: float64
-        description: "Price at event time (monthly-normalized recommended)"
+        description: "Price per term at event time"
         tests:
           # Required on transactional events, nullable on signal events
           - not_null:
@@ -98,6 +100,30 @@ models:
           # No negative prices
           - dbt_utils.expression_is_true:
               expression: ">= 0"
+      - name: term_length
+        data_type: int64
+        description: "Number of term units per billing cycle (e.g., 1 for monthly, 13 for 13-week, 12 for annual)"
+        tests:
+          # Required on transactional events, nullable on signal events
+          - not_null:
+              config:
+                where: "event_type in ('created', 'renewed', 'changed.plan', 'trial_started')"
+          # Must be positive
+          - dbt_utils.expression_is_true:
+              expression: ">= 1"
+              config:
+                where: "term_length is not null"
+      - name: term_unit
+        data_type: string
+        description: "Unit of the billing cycle: day, week, or month"
+        tests:
+          # Required on transactional events, nullable on signal events
+          - not_null:
+              config:
+                where: "event_type in ('created', 'renewed', 'changed.plan', 'trial_started')"
+          # Must use standard units
+          - accepted_values:
+              values: ["day", "week", "month", "year"]
       - name: renewal_at
         data_type: timestamp
         description: "Next renewal/billing date"
@@ -114,20 +140,12 @@ models:
           and `recreated` (churned customer reactivated with a new subscription).
           Null for all other event types.
     data_tests:
-      # No two events can share the same position within a subscription
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - subscription_id
-            - event_order
-      # First event per subscription should be 'created'
-      - dbt_utils.expression_is_true:
-          expression: "event_type = 'created'"
-          config:
-            where: "event_order = 1"
-            severity: warn
       # Every subscription must have exactly one 'created' event
       - dbt_utils.expression_is_true:
           expression: "1 = sum(case when event_type = 'created' then 1 else 0 end) over (partition by subscription_id)"
+      # Each subscription belongs to exactly one customer
+      - dbt_utils.expression_is_true:
+          expression: "1 = count(distinct customer_id) over (partition by subscription_id)"
       # Renewal date must not be in the past relative to the event
       - dbt_utils.expression_is_true:
           expression: "renewal_at >= event_at"
@@ -138,17 +156,6 @@ models:
           expression: "successor_subscription_id is null"
           config:
             where: "event_type != 'changed.plan'"
-      # Each subscription belongs to exactly one customer
-      - dbt_utils.expression_is_true:
-          expression: "1 = count(distinct customer_id) over (partition by subscription_id)"
-      # event_order must be sequential with no gaps (row_number)
-      - dbt_utils.expression_is_true:
-          expression: "event_order = row_number() over (partition by subscription_id order by event_order)"
-      # event_at must respect event_order (chronological consistency)
-      - dbt_utils.expression_is_true:
-          expression: "event_at >= lag(event_at) over (partition by subscription_id order by event_order)"
-          config:
-            where: "event_order > 1"
       # successor_subscription_id must reference an existing subscription
       - relationships:
           column_name: successor_subscription_id
@@ -156,3 +163,34 @@ models:
           field: subscription_id
           config:
             where: "successor_subscription_id is not null"
+      # -- When event_order is provided: validate ordering --
+      # No two events can share the same position within a subscription
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - subscription_id
+            - event_order
+          config:
+            where: "event_order is not null"
+      # First event per subscription should be 'created'
+      - dbt_utils.expression_is_true:
+          expression: "event_type = 'created'"
+          config:
+            where: "event_order = 1"
+            severity: warn
+      # event_order must be sequential with no gaps (row_number)
+      - dbt_utils.expression_is_true:
+          expression: "event_order = row_number() over (partition by subscription_id order by event_order)"
+          config:
+            where: "event_order is not null"
+      # event_at must respect event_order (chronological consistency)
+      - dbt_utils.expression_is_true:
+          expression: "event_at >= lag(event_at) over (partition by subscription_id order by event_order)"
+          config:
+            where: "event_order > 1"
+      # -- When event_order is not provided: timestamps must be unique per subscription --
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - subscription_id
+            - event_at
+          config:
+            where: "event_order is null"
