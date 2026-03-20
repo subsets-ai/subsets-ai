@@ -7,7 +7,8 @@
   },
 
   "mounts": [
-    "source=subsets-ai-claude-config,target=/root/.claude,type=volume"
+    "source=subsets-ai-claude-config,target=/root/.claude,type=volume",
+    "source=subsets-ai-gh-config,target=/root/.config/gh,type=volume"
   ],
 
   "containerEnv": {
@@ -17,7 +18,8 @@
   "postCreateCommand": "yarn install --frozen-lockfile --non-interactive",
 
   "features": {
-    "ghcr.io/devcontainers/features/git:1": {}
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
   },
 
   "customizations": {
