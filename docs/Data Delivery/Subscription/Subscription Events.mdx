@@ -59,7 +59,7 @@ Some source systems (e.g., Piano) create a new `subscription_id` when a customer
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | sub_001 | 1 | 2024-01-01 | `created` | monthly-basic | 9.99 | 1 | month | 2024-02-01 | |
 | sub_001 | 2 | 2024-02-01 | `renewed` | monthly-basic | 9.99 | 1 | month | 2024-03-01 | |
-| sub_001 | 3 | 2024-03-15 | `changed.plan` | yearly-premium | 99.99 | 1 | year | 2025-03-15 | sub_002 |
+| sub_001 | 3 | 2024-03-15 | `changed.plan` | | | | | | sub_002 |
 
 **New subscription (sub_002):**
 
@@ -185,7 +185,7 @@ models:
           # Required on transactional events, nullable on signal events
           - not_null:
               config:
-                where: "event_type in ('created', 'renewed', 'changed.plan', 'trial_started')"
+                where: "event_type in ('created', 'renewed', 'trial_started') or (event_type = 'changed.plan' and successor_subscription_id is null)"
       - name: price
         data_type: float64
         description: "Price per term at event time"
@@ -193,7 +193,7 @@ models:
           # Required on transactional events, nullable on signal events
           - not_null:
               config:
-                where: "event_type in ('created', 'renewed', 'changed.plan', 'trial_started')"
+                where: "event_type in ('created', 'renewed', 'trial_started') or (event_type = 'changed.plan' and successor_subscription_id is null)"
           # No negative prices
           - dbt_utils.expression_is_true:
               expression: ">= 0"
@@ -204,7 +204,7 @@ models:
           # Required on transactional events, nullable on signal events
           - not_null:
               config:
-                where: "event_type in ('created', 'renewed', 'changed.plan', 'trial_started')"
+                where: "event_type in ('created', 'renewed', 'trial_started') or (event_type = 'changed.plan' and successor_subscription_id is null)"
           # Must be positive
           - dbt_utils.expression_is_true:
               expression: ">= 1"
@@ -217,7 +217,7 @@ models:
           # Required on transactional events, nullable on signal events
           - not_null:
               config:
-                where: "event_type in ('created', 'renewed', 'changed.plan', 'trial_started')"
+                where: "event_type in ('created', 'renewed', 'trial_started') or (event_type = 'changed.plan' and successor_subscription_id is null)"
           # Must use standard units
           - accepted_values:
               values: ["day", "week", "month", "year"]
@@ -228,7 +228,7 @@ models:
           # Required on transactional events, nullable on signal events
           - not_null:
               config:
-                where: "event_type in ('created', 'renewed', 'changed.plan', 'trial_started')"
+                where: "event_type in ('created', 'renewed', 'trial_started') or (event_type = 'changed.plan' and successor_subscription_id is null)"
       - name: successor_subscription_id
         data_type: string
         description: >

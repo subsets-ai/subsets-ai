@@ -88,7 +88,7 @@ models:
           # Required on transactional events, nullable on signal events
           - not_null:
               config:
-                where: "event_type in ('created', 'renewed', 'changed.plan', 'trial_started')"
+                where: "event_type in ('created', 'renewed', 'trial_started') or (event_type = 'changed.plan' and successor_subscription_id is null)"
       - name: price
         data_type: float64
         description: "Price per term at event time"
@@ -96,7 +96,7 @@ models:
           # Required on transactional events, nullable on signal events
           - not_null:
               config:
-                where: "event_type in ('created', 'renewed', 'changed.plan', 'trial_started')"
+                where: "event_type in ('created', 'renewed', 'trial_started') or (event_type = 'changed.plan' and successor_subscription_id is null)"
           # No negative prices
           - dbt_utils.expression_is_true:
               expression: ">= 0"
@@ -107,7 +107,7 @@ models:
           # Required on transactional events, nullable on signal events
           - not_null:
               config:
-                where: "event_type in ('created', 'renewed', 'changed.plan', 'trial_started')"
+                where: "event_type in ('created', 'renewed', 'trial_started') or (event_type = 'changed.plan' and successor_subscription_id is null)"
           # Must be positive
           - dbt_utils.expression_is_true:
               expression: ">= 1"
@@ -120,7 +120,7 @@ models:
           # Required on transactional events, nullable on signal events
           - not_null:
               config:
-                where: "event_type in ('created', 'renewed', 'changed.plan', 'trial_started')"
+                where: "event_type in ('created', 'renewed', 'trial_started') or (event_type = 'changed.plan' and successor_subscription_id is null)"
           # Must use standard units
           - accepted_values:
               values: ["day", "week", "month", "year"]
@@ -131,7 +131,7 @@ models:
           # Required on transactional events, nullable on signal events
           - not_null:
               config:
-                where: "event_type in ('created', 'renewed', 'changed.plan', 'trial_started')"
+                where: "event_type in ('created', 'renewed', 'trial_started') or (event_type = 'changed.plan' and successor_subscription_id is null)"
       - name: successor_subscription_id
         data_type: string
         description: >
