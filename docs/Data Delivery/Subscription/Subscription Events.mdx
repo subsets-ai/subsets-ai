@@ -51,16 +51,6 @@ The conditional fields are required on transactional events (`created`, `renewed
 | `renewal_at` | **Required** |
 | `successor_subscription_id` | Only on `changed.plan` |
 
-## Ordering Rules
-
-`event_order` is optional. If not provided, `(subscription_id, event_at)` must be unique so ordering can be derived. It is required when multiple events share the same timestamp.
-
-When provided, `event_order` must be a deterministic, sequential position (`1, 2, 3, …`) within each subscription's timeline:
-
-- Computed as `row_number()` per `subscription_id`, ordered by `event_at` and source-specific tiebreakers
-- Must start at `1` with no gaps
-- `event_at` must be non-decreasing across the sequence — a later `event_order` cannot have an earlier `event_at`
-
 ## Example Timeline
 
 A typical subscription lifecycle might look like this:
@@ -103,6 +93,16 @@ If your source system keeps the same `subscription_id` across plan changes, you 
 :::tip Platform-Specific Guides
 If you use a supported platform like [Piano](/Data%20Delivery/Subscription/Piano), refer to the platform-specific guide for pre-built mappings.
 :::
+
+## Ordering Rules
+
+`event_order` is optional. If not provided, `(subscription_id, event_at)` must be unique so ordering can be derived. It is required when multiple events share the same timestamp.
+
+When provided, `event_order` must be a deterministic, sequential position (`1, 2, 3, …`) within each subscription's timeline:
+
+- Computed as `row_number()` per `subscription_id`, ordered by `event_at` and source-specific tiebreakers
+- Must start at `1` with no gaps
+- `event_at` must be non-decreasing across the sequence — a later `event_order` cannot have an earlier `event_at`
 
 ## dbt Data Contract
 
