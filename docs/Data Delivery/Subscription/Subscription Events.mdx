@@ -9,12 +9,10 @@ import { subscriptionEventsSchema } from '@site/src/schemas/subscription_events'
 
 This page defines the data contract for delivering subscription lifecycle data to Subsets. The contract specifies the exact schema, event types, and integrity rules your data must satisfy.
 
-We provide the contract as a **dbt YAML file** with built-in tests. Add it to your dbt project, point it at your data, and run `dbt test` — all tests must pass before delivering data to Subsets.
-
 :::info Data Contract
-**[Download subscription_events_contract.yml](/schemas/subscription_events_contract.yml)**
+We provide this contract as a **dbt YAML file** with built-in tests. Add it to your dbt project and run `dbt test` to verify your data is ready for Subsets.
 
-Add this file to your dbt project and run `dbt test` to verify your data is ready for Subsets.
+**[Download subscription_events_contract.yml](/schemas/subscription_events_contract.yml)** | [View the full contract below](#dbt-data-contract)
 :::
 
 ## Schema
@@ -128,11 +126,205 @@ If you use a supported platform like [Piano](/Data%20Delivery/Subscription/Piano
 
 ## dbt Data Contract
 
-[Download subscription_events_contract.yml](/schemas/subscription_events_contract.yml)
+To validate your data, download the contract below, add it to your dbt project, and run `dbt test`.
 
-To validate your data:
+**[Download subscription_events_contract.yml](/schemas/subscription_events_contract.yml)**
 
-1. Download the contract YAML and add it to your dbt project
-2. Create a model that maps your source data to the schema above
-3. Run `dbt test` — all column-level constraints, accepted values, and data integrity tests must pass
-4. Deliver the data to Subsets
+```yaml
+models:
+  - name: subscription_events
+    description: >
+      Subscription lifecycle events from the source system, mapped to the standard event taxonomy.
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: subscription_id
+        data_type: string
+        description: "Source system subscription identifier"
+        constraints:
+          - type: not_null
+      - name: customer_id
+        data_type: string
+        description: "Source system customer identifier"
+        constraints:
+          - type: not_null
+      - name: event_at
+        data_type: timestamp
+        description: "When the event occurred"
+        constraints:
+          - type: not_null
+        tests:
+          # No future-dated events
+          - dbt_utils.expression_is_true:
+              expression: "<= current_timestamp()"
+      - name: event_type
+        data_type: string
+        description: >
+          Standardized event type from the accepted taxonomy:
+
+          - `created` — A new subscription was activated. Must be the first event (event_order = 1) per subscription.
+
+          - `renewed` — A successful payment extended the subscription for another term. Includes both auto-renewals and manual payments.
+
+          - `expired` — The subscription term ended without renewal. May be synthetic (generated when no payment follows the expected renewal date) or from the source system directly.
+
+          - `cancelled.user` — The customer explicitly requested cancellation (e.g., self-service portal, support contact, stop request). The subscription may still be active until the end of the current term — this marks the intent to cancel, not the moment access ends. Access ends at `expired`.
+
+          - `cancelled.system` — The subscription was terminated by the system after all recovery attempts were exhausted. This is the final outcome of an unresolved `failed_to_renew.payment_failure`, an admin action, or policy enforcement. Not initiated by the customer.
+
+          - `failed_to_renew.payment_failure` — A renewal payment was attempted and failed. The subscription enters a grace or retry period. This is a transient state — it resolves into either `renewed` (payment recovered) or `cancelled.system` (all retries exhausted). Multiple failures may occur before resolution.
+
+          - `changed.plan` — The plan, offer, or product tier changed (upgrade, downgrade, or lateral move). If the source system creates a new subscription_id for the plan change (e.g., Piano), populate `successor_subscription_id` with the new subscription_id.
+
+          - `changed.auto_renew_off` — Auto-renewal was disabled. The subscription will not renew at the end of the current term.
+
+          - `changed.auto_renew_on` — Auto-renewal was re-enabled after being previously disabled.
+
+          - `trial_started` — A free trial period began.
+        constraints:
+          - type: not_null
+        tests:
+          # Must use the standard event taxonomy
+          - accepted_values:
+              values:
+                [
+                  "created",
+                  "renewed",
+                  "expired",
+                  "cancelled.user",
+                  "cancelled.system",
+                  "failed_to_renew.payment_failure",
+                  "changed.plan",
+                  "changed.auto_renew_off",
+                  "changed.auto_renew_on",
+                  "trial_started",
+                ]
+      - name: event_order
+        data_type: int64
+        description: >
+          Deterministic position of this event within the subscription's timeline.
+          row_number() per subscription_id, ordered by event_at and source-specific tiebreakers.
+          Must produce a unique, chronologically correct sequence per subscription.
+          Optional — if not provided, (subscription_id, event_at) must be unique so ordering
+          can be derived. Required when multiple events share the same timestamp.
+        tests:
+          # Ordering starts at 1 (when provided)
+          - dbt_utils.expression_is_true:
+              expression: ">= 1"
+              config:
+                where: "event_order is not null"
+      - name: plan
+        data_type: string
+        description: "Subscription plan name at event time"
+        tests:
+          # Required on transactional events, nullable on signal events
+          - not_null:
+              config:
+                where: "event_type in ('created', 'renewed', 'changed.plan', 'trial_started')"
+      - name: price
+        data_type: float64
+        description: "Price per term at event time"
+        tests:
+          # Required on transactional events, nullable on signal events
+          - not_null:
+              config:
+                where: "event_type in ('created', 'renewed', 'changed.plan', 'trial_started')"
+          # No negative prices
+          - dbt_utils.expression_is_true:
+              expression: ">= 0"
+      - name: term_length
+        data_type: int64
+        description: "Number of term units per billing cycle (e.g., 1 for monthly, 13 for 13-week, 12 for annual)"
+        tests:
+          # Required on transactional events, nullable on signal events
+          - not_null:
+              config:
+                where: "event_type in ('created', 'renewed', 'changed.plan', 'trial_started')"
+          # Must be positive
+          - dbt_utils.expression_is_true:
+              expression: ">= 1"
+              config:
+                where: "term_length is not null"
+      - name: term_unit
+        data_type: string
+        description: "Unit of the billing cycle: day, week, or month"
+        tests:
+          # Required on transactional events, nullable on signal events
+          - not_null:
+              config:
+                where: "event_type in ('created', 'renewed', 'changed.plan', 'trial_started')"
+          # Must use standard units
+          - accepted_values:
+              values: ["day", "week", "month", "year"]
+      - name: renewal_at
+        data_type: timestamp
+        description: "Next renewal/billing date"
+        tests:
+          # Required on transactional events, nullable on signal events
+          - not_null:
+              config:
+                where: "event_type in ('created', 'renewed', 'changed.plan', 'trial_started')"
+      - name: successor_subscription_id
+        data_type: string
+        description: >
+          The subscription_id of a new subscription that replaced or followed this one.
+          Used with `changed.plan` (source system created a new subscription_id for the plan change)
+          and `recreated` (churned customer reactivated with a new subscription).
+          Null for all other event types.
+    data_tests:
+      # Every subscription must have exactly one 'created' event
+      - dbt_utils.expression_is_true:
+          expression: "1 = sum(case when event_type = 'created' then 1 else 0 end) over (partition by subscription_id)"
+      # Each subscription belongs to exactly one customer
+      - dbt_utils.expression_is_true:
+          expression: "1 = count(distinct customer_id) over (partition by subscription_id)"
+      # Renewal date must not be in the past relative to the event
+      - dbt_utils.expression_is_true:
+          expression: "renewal_at >= event_at"
+          config:
+            where: "renewal_at is not null"
+      # successor_subscription_id only allowed on changed.plan events
+      - dbt_utils.expression_is_true:
+          expression: "successor_subscription_id is null"
+          config:
+            where: "event_type != 'changed.plan'"
+      # successor_subscription_id must reference an existing subscription
+      - relationships:
+          column_name: successor_subscription_id
+          to: ref('subscription_events')
+          field: subscription_id
+          config:
+            where: "successor_subscription_id is not null"
+      # -- When event_order is provided: validate ordering --
+      # No two events can share the same position within a subscription
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - subscription_id
+            - event_order
+          config:
+            where: "event_order is not null"
+      # First event per subscription should be 'created'
+      - dbt_utils.expression_is_true:
+          expression: "event_type = 'created'"
+          config:
+            where: "event_order = 1"
+            severity: warn
+      # event_order must be sequential with no gaps (row_number)
+      - dbt_utils.expression_is_true:
+          expression: "event_order = row_number() over (partition by subscription_id order by event_order)"
+          config:
+            where: "event_order is not null"
+      # event_at must respect event_order (chronological consistency)
+      - dbt_utils.expression_is_true:
+          expression: "event_at >= lag(event_at) over (partition by subscription_id order by event_order)"
+          config:
+            where: "event_order > 1"
+      # -- When event_order is not provided: timestamps must be unique per subscription --
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - subscription_id
+            - event_at
+          config:
+            where: "event_order is null"
+```
