@@ -12,7 +12,7 @@ export const subscriptionEventsSchema = {
       { name: "event_order", type: "INT64", required: "When timestamps conflict", description: "Deterministic position of this event within the subscription's timeline" },
       { name: "plan", type: "STRING", required: "On transactional events", description: "Subscription plan name at event time" },
       { name: "price", type: "FLOAT64", required: "On transactional events", description: "Price per term at event time" },
-      { name: "term_length", type: "INT64", required: "On transactional events", description: "Number of term units per billing cycle (e.g., 1 for monthly, 13 for 13-week, 12 for annual)" },
+      { name: "term_length", type: "INT64", required: "On transactional events", description: "Number of term_units per billing cycle (e.g., term_length=1 + term_unit=month → monthly, term_length=13 + term_unit=week → 13-week, term_length=1 + term_unit=year → annual)" },
       { name: "term_unit", type: "STRING", required: "On transactional events", description: "Unit of the billing cycle: day, week, or month" },
       { name: "renewal_at", type: "TIMESTAMP", required: "On transactional events", description: "Next renewal/billing date" },
       { name: "successor_subscription_id", type: "STRING", required: "Only on changed.plan", description: "The subscription_id of a new subscription that replaced or followed this one" },
