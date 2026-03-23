@@ -19,8 +19,6 @@ We provide this contract as a **dbt YAML file** with built-in tests. Add it to y
 
 <SchemaTable schema={subscriptionEventsSchema.subscription_events} defaultOpen />
 
-Other fields are conditionally required depending on the event type — see [Field Requirements by Event Type](#field-requirements-by-event-type).
-
 ## Event Types
 
 Each row represents a single lifecycle event. The `event_type` column must use one of the following standardized values:
@@ -38,19 +36,6 @@ Each row represents a single lifecycle event. The `event_type` column must use o
 | `changed.auto_renew_on` | Auto-renewal was re-enabled after being previously disabled. |
 | `trial_started` | A free trial period began. |
 
-## Field Requirements by Event Type
-
-The conditional fields are required on transactional events (`created`, `renewed`, `changed.plan`, `trial_started`):
-
-| Field | Requirement |
-| --- | --- |
-| `plan` | **Required** |
-| `price` | **Required** |
-| `term_length` | **Required** |
-| `term_unit` | **Required** |
-| `renewal_at` | **Required** |
-| `successor_subscription_id` | Only on `changed.plan` |
-
 ## Example Timeline
 
 A typical subscription lifecycle might look like this:
@@ -62,8 +47,7 @@ A typical subscription lifecycle might look like this:
 | sub_001 | 3 | 2024-03-01 | `failed_to_renew.payment_failure` | | | | | |
 | sub_001 | 4 | 2024-03-05 | `renewed` | monthly-basic | 9.99 | 1 | month | 2024-04-01 |
 | sub_001 | 5 | 2024-04-01 | `changed.auto_renew_off` | | | | | |
-| sub_001 | 6 | 2024-04-15 | `cancelled.user` | | | | | |
-| sub_001 | 7 | 2024-05-01 | `expired` | | | | | |
+| sub_001 | 6 | 2024-05-01 | `expired` | | | | | |
 
 ## Subscription Migration
 
