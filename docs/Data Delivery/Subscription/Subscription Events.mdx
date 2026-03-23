@@ -86,7 +86,6 @@ When provided, `event_order` must be a deterministic, sequential position (`1, 2
 
 - Computed as `row_number()` per `subscription_id`, ordered by `event_at` and source-specific tiebreakers
 - Must start at `1` with no gaps
-- `event_at` must be non-decreasing across the sequence — a later `event_order` cannot have an earlier `event_at`
 
 ## dbt Data Contract
 
