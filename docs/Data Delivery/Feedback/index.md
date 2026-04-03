@@ -15,6 +15,7 @@ Select your ESP/marketing automation platform below for detailed schema requirem
 - [Braze](/Data%20Delivery/Feedback/Braze)
 - [Agillic](/Data%20Delivery/Feedback/Agillic)
 - [Adobe Campaign](/Data%20Delivery/Feedback/Adobe)
+- [Salesforce Marketing Cloud](/Data%20Delivery/Feedback/Salesforce%20Marketing%20Cloud)
 
 ## Data Synchronization
 
