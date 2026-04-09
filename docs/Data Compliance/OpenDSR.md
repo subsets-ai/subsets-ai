@@ -10,13 +10,36 @@ Subsets implements the [OpenDSR v2](https://github.com/nicholasgasior/opendsr) s
 
 ## Authentication
 
-All endpoints require a valid Bearer token for an **admin** user. Include the token in the `Authorization` header:
+All endpoints require a valid Bearer token. Include it in the `Authorization` header:
 
 ```
 Authorization: Bearer <token>
 ```
 
-Contact your Subsets account manager to obtain API credentials.
+Two authentication methods are supported:
+
+### Machine-to-machine (recommended for automation)
+
+Use the OAuth 2.0 Client Credentials Grant to obtain a token. Subsets will provision a `client_id` and `client_secret` for your organization.
+
+```bash
+curl -X POST https://auth.subsets.ai/oauth/token \
+  -H "Content-Type: application/json" \
+  -d '{
+    "client_id": "<your_client_id>",
+    "client_secret": "<your_client_secret>",
+    "audience": "https://api.subsets.ai",
+    "grant_type": "client_credentials"
+  }'
+```
+
+The response contains an `access_token` to use as the Bearer token. Tokens are short-lived; request a new one when it expires.
+
+### Admin user token
+
+Users with **admin** role can also authenticate using the Bearer token obtained by SSO login.
+
+Contact your Subsets account manager to obtain credentials.
 
 ## Supported capabilities
 
