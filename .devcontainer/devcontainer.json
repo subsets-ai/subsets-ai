@@ -1,0 +1,33 @@
+{
+  "name": "Subsets Docs",
+
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+
+  "mounts": [
+    "source=subsets-ai-claude-config,target=/root/.claude,type=volume",
+    "source=subsets-ai-gh-config,target=/root/.config/gh,type=volume"
+  ],
+
+  "containerEnv": {
+    "CLAUDE_CONFIG_DIR": "/root/.claude"
+  },
+
+  "postCreateCommand": "yarn install --frozen-lockfile --non-interactive",
+
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "Anthropic.claude-code"
+      ],
+      "settings": {}
+    }
+  }
+}
