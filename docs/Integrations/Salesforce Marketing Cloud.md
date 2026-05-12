@@ -6,16 +6,33 @@ sidebar_position: 7
 
 Subsets supports syncing data to Salesforce Marketing Cloud (SFMC) using the Data Extensions API. This allows you to use experiment treatment assignments and customer attributes for segmentation in Automation Studio and Journey Builder.
 
-The following fields will be created in a Data Extension:
-```
-{
-  'subsets_experiment_id',
-  'subsets_experiment_added_at',
-  'subsets_experiment_name',
-  'subsets_subscriber_churn_risk',
-  'subsets_experiment_assignment'
-}
-```
+## Data Extension
+
+Subsets writes experiment assignments to a single Data Extension. It must exist before the integration runs — either the customer's SFMC admin provisions it, or Subsets provisions it via the REST API.
+
+### Data Extension properties
+
+| Property               | Value                                                  |
+| ---------------------- | ------------------------------------------------------ |
+| Name / External Key    | `subsets`                                              |
+| Description            | Subsets experiment assignment for journey and campaign segmentation |
+| Is Sendable            | `true`                                                 |
+| Sendable Field         | `SubscriberKey` → `_SubscriberKey`                     |
+| Is Testable            | `false`                                                |
+| Retention              | None (rows retained indefinitely)                      |
+
+### Schema
+
+| Column                  | Type | Length | Nullable | Primary Key | Description                                                              |
+| ----------------------- | ---- | ------ | -------- | ----------- | ------------------------------------------------------------------------ |
+| `SubscriberKey`         | Text | 100    | no       | yes         | Customer identifier (matches your SFMC contact's SubscriberKey)          |
+| `experiment_id`         | Text | 100    | no       | —           | Experiment identifier                       |
+| `experiment_added_at`   | Date | —      | yes      | —           | UTC timestamp when the customer was enrolled in the experiment           |
+| `experiment_name`       | Text | 255    | yes      | —           | Human-readable experiment name                                           |
+| `subscriber_churn_risk` | Text | 50     | yes      | —           | Probability (0–100, 4 decimals) the subscriber churns within 30 days     |
+| `experiment_assignment` | Text | 100    | no       | —           | Variant assignment slug (e.g. `exp-123-variant-2`) |
+
+A subscriber can only be in one experiment + variant at a time, so the primary key is `SubscriberKey` alone. When a subscriber moves from experiment A to experiment B, the upsert replaces the row in place.
 
 ## Setup guide
 
