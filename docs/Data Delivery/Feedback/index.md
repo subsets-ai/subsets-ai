@@ -15,6 +15,7 @@ If you use one of the following platforms, see the platform-specific documentati
 - [Braze](/Data%20Delivery/Feedback/Braze)
 - [Agillic](/Data%20Delivery/Feedback/Agillic)
 - [Adobe Campaign](/Data%20Delivery/Feedback/Adobe)
+- [BlueConic](/Data%20Delivery/Feedback/BlueConic)
 
 ## General Schema
 
