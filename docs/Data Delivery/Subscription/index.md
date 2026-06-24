@@ -6,6 +6,12 @@ sidebar_position: 1
 
 This data represents the lifecycle of your subscriptions, including when subscribers sign up, complete trials, enter payment-failure grace periods, cancel, and expire. We need both the current state **and** history of subscriptions.
 
+## Subscription Events Data Contract
+
+For any subscription platform, we provide a **standardized data contract** that defines exactly how lifecycle events should be structured:
+
+- [Subscription Events](/Data%20Delivery/Subscription/Subscription%20Events) — the canonical format for delivering subscription data to Subsets
+
 ## Platform-Specific Schemas
 
 If you use one of the following subscription management platforms, see the platform-specific documentation:

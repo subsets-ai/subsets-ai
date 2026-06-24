@@ -2,6 +2,21 @@
 
 This website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator.
 
+### Dev Container
+
+The easiest way to get started is using the included dev container, which comes with all dependencies pre-configured.
+
+**Prerequisites:** [Docker](https://www.docker.com/) and [VS Code](https://code.visualstudio.com/) with the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).
+
+1. Open this repo in VS Code
+2. Open the command palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) and run `Dev Containers: Reopen in Container`
+3. Wait for the container to build and dependencies to install
+4. Start the dev server:
+   ```
+   $ yarn start --host 0.0.0.0
+   ```
+5. VS Code will automatically forward port 3000 — open the prompted URL in your browser
+
 ### Installation
 
 ```
