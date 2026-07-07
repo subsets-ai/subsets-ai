@@ -98,9 +98,9 @@ Available marketing automation tool integrations including:
 - Test all integration instructions
 
 ### Deployment
-The site uses GitHub Actions for automatic deployment:
+The site deploys automatically via GitHub Actions (`.github/workflows/deploy-to-github-pages.yml`):
 - **Trigger**: Push/merge to `main` branch
-- **Target**: GitHub Pages (likely)
+- **Target**: GitHub Pages
 - **Build**: Automatic via Docusaurus build process
 
 ## Troubleshooting
