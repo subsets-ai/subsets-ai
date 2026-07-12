@@ -18,7 +18,7 @@ interface SchemaTableProps {
   defaultOpen?: boolean;
 }
 
-export default function SchemaTable({ schema, defaultOpen = false }: SchemaTableProps): JSX.Element {
+export default function SchemaTable({ schema, defaultOpen = false }: SchemaTableProps): React.JSX.Element {
   return (
     <details style={{ marginBottom: '1.5rem' }} open={defaultOpen}>
       <summary style={{
