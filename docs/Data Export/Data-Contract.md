@@ -1,11 +1,11 @@
 ---
-sidebar_position: 3
+sidebar_position: 4
 slug: /data-export/data-contract
 ---
 
 # Data contract
 
-This page is the authoritative reference for the files Subsets delivers to your bucket. The `_schema/SCHEMA.md` file delivered alongside the data carries the parts specific to your organization (your integrations, your enabled feeds, ready-made `CREATE EXTERNAL TABLE` statements); this page carries everything generic. Where the two appear to disagree, this contract is authoritative - `SCHEMA.md` is informative only, and you should never gate ingestion on parsing it.
+This page is the authoritative reference for the files Subsets delivers to your bucket. The `_schema/SCHEMA.md` file delivered alongside the data carries the parts specific to your organization - your integrations, your enabled feeds, and ready-made `CREATE EXTERNAL TABLE` definitions for your engine; this page carries everything generic. Where the two appear to disagree, this contract is authoritative - `SCHEMA.md` is informative only, and you should never gate ingestion on parsing it.
 
 The contract is versioned. Everything below describes `v1/`. Within `v1`, new columns may be added - but only ever appended at the **end** of the column list, never inserted mid-list and never reordered, so ordinal-bound readers (Athena's OpenCSVSerde, any skip-the-header positional reader) stay correct. A breaking change is never edited in place: it re-roots the affected feed to a `v2/` folder, delivered in parallel while you migrate.
 
@@ -50,20 +50,21 @@ subsets/                                         ← your chosen key prefix (emp
 | `{feed}-YYYY-MM-DD.csv.gz` | The data file: always gzip CSV with a header row |
 | `_SUCCESS` | Zero-byte marker written last; trust a partition only when present |
 
+Underscore-prefixed paths (`_SUCCESS`, `_schema/`, `_validation/`) are metadata, not data - partition-aware engines skip them automatically.
+
 ## File format
 
-- **Headered CSV, always gzipped** (`.csv.gz`). The first line is the column names, so every file is self-describing. A quiet day still delivers a header-only file - "no data today" stays distinct from a dead pipeline.
+- **Headered CSV, always gzipped** (`.csv.gz`). The first line is the column names. A quiet day still delivers a header-only file - "no data today" stays distinct from a dead pipeline.
 - **CSV dialect**: RFC 4180. Comma delimiter; `"` quoting with `""` escaping; minimal quoting (a field is quoted only when it contains a comma, quote, or leading/trailing whitespace); CRLF record terminator; UTF-8 with no BOM.
 - **A field never spans lines.** CR, LF and TAB inside free-text values (experiment, audience and variant names) are collapsed to a single space, so the files are safe even for line-based readers that do not honor quoting.
 - **Timestamps** are UTC ISO-8601 with a trailing `Z`, whole-second precision. **Numbers** use `.` as the decimal separator. **An empty cell means null.**
 
 ## Reading the feed correctly
 
-Three rules keep ingestion robust:
-
 1. **Trust `_SUCCESS`.** A `dt=` partition is complete only when its `_SUCCESS` marker exists. The marker is written last.
 2. **Resolve "latest" by listing folders, not by scanning rows.** The current partition for an integration is its newest `dt=` folder that carries `_SUCCESS`. Do not use `max(dt)` over the data rows: on a quiet day the newest partition is header-only, so a row-based max silently returns an older day as current. Resolve per integration, never as a global max across integrations - a lagging integration must not be dropped.
 3. **Sealed days.** A `dt=` partition may be rewritten during its UTC day; each rewrite is a complete replacement of the whole file (object swaps are atomic, never partial). Once the UTC day ends, the partition is immutable forever. Ingest any partition with `dt` before today (UTC) as final; if you consume intra-day, re-read today's partition on your next load.
+4. **How an empty cell reads back depends on your engine.** DuckDB, Spark and BigQuery map an empty field to SQL `NULL`; Athena's OpenCSVSerde is string-only and deserializes it to the empty string `''`, not `NULL` - so on Athena `WHERE exported_at IS NULL` matches zero rows. The fully portable predicate is `WHERE exported_at IS NULL OR exported_at = ''`.
 
 **Cadence.** Each feed snapshots after your organization's daily data import, with at most 24 hours between snapshots. The liveness signal is a new `dt=` partition (with `_SUCCESS`) arriving within that cadence.
 
@@ -126,7 +127,7 @@ One row per customer with at least one scored subscription.
 | `customer_id` | The integration's `customer_crm_id` |
 | `churn_risk` | The highest churn probability across that customer's scored subscriptions, `0.0000`-`1.0000` (higher = more likely to churn), 4 decimals |
 
-**Uniqueness.** (`integration`, `customer_id`) is unique within a file.
+**Uniqueness.** (`integration`, `customer_id`) is unique within a file, so it joins 1:1 to your CRM contact.
 
 **Semantics:**
 
@@ -141,98 +142,7 @@ The CRM attribute and this feed differ by design. The attribute is scaled 0-100,
 
 ## Lifecycle and retention
 
-- **Integration lifecycle.** Every active integration receives a file daily, so the only meaningful liveness signal is whether a new `dt=` partition (carrying `_SUCCESS`) keeps arriving. If new partitions stop for one integration, that integration was removed in Subsets or something is broken - reach out. A removed integration's folder simply stops receiving new days; there is no tombstone. A deleted-and-recreated integration is a new folder (new guid) with no link to the old one.
+- **Integration lifecycle.** If new `dt=` partitions stop arriving for one integration, that integration was removed in Subsets or something is broken - reach out. A removed integration's folder simply stops receiving new days; there is no tombstone. A deleted-and-recreated integration is a new folder (new guid) with no link to the old one.
 - **Gaps in old partitions are not data loss.** The destination bucket is yours; your own lifecycle and retention rules decide how long a `dt=` partition survives there. Subsets only ever writes objects and never deletes.
 - **The Subsets archive is kept 30 days.** Subsets keeps a copy of every delivered file as evidence of what was sent, on a 30-day retention. Keep whatever history you need on your side: Subsets cannot re-deliver a partition that has aged out of the archive or that your own retention policy expired from your bucket.
 - **`customer_id` is integration-scoped.** It is your customer's id in that CRM. The same person under two integrations appears in both folders under unrelated ids; nothing in the feeds links them. Analyze per integration, or join on your own identity data - naively unioning integration folders can double-count people.
-
-## Querying the feed
-
-Point any CSV/partition-aware tool at the feed: the header row names the columns, and the partition folders (`integration=...`, `dt=...`) surface as columns in any engine that understands the Hive layout. The `SCHEMA.md` in your bucket contains ready-made table definitions with your actual bucket, prefix and integration keys filled in; the walkthroughs below use placeholders.
-
-**How an empty cell reads back depends on your engine.** An empty cell means "no value". DuckDB, Spark and BigQuery map it to SQL `NULL`; Athena's OpenCSVSerde is string-only and deserializes it to the empty string `''`, not `NULL` - so on Athena `WHERE exported_at IS NULL` matches zero rows. The fully portable predicate is `WHERE exported_at IS NULL OR exported_at = ''`.
-
-### DuckDB
-
-Reads the header and partitions directly; gzip is transparent:
-
-```sql
-SELECT *
-FROM read_csv_auto('s3://<bucket>/<prefix>experiment-enrollments/v1/**/*.csv.gz', hive_partitioning = true);
-```
-
-### Spark
-
-Header and the `integration`/`dt` partition columns are auto-derived from the folder names:
-
-```python
-df = spark.read.option("header", True).csv("s3://<bucket>/<prefix>experiment-enrollments/v1/")
-```
-
-### Athena
-
-Partition projection - no crawler needed. `skip.header.line.count` skips the header row. OpenCSVSerde is string-only and binds columns **by position**, not by name: declare every column `string`, in the exact delivered order - a wrong order silently mis-assigns values. Keep the ISO-8601 timestamp columns as `string` and parse them at query time with `from_iso8601_timestamp(...)`; declaring them `timestamp` yields `NULL`.
-
-```sql
-CREATE EXTERNAL TABLE experiment_enrollments (
-  `customer_id` string,
-  `experiment_id` string,
-  `experiment_name` string,
-  `variant_name` string,
-  `variant_type` string,
-  `is_suppressed` string,
-  `experiment_assignment` string,
-  `enrolled_at` string,
-  `unenrolled_at` string,
-  `exported_at` string
-)
-PARTITIONED BY (`integration` string, `dt` date)
-ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
-LOCATION 's3://<bucket>/<prefix>experiment-enrollments/v1/'
-TBLPROPERTIES (
-  'skip.header.line.count'='1',
-  'projection.enabled'='true',
-  'projection.integration.type'='injected',
-  'projection.dt.type'='date',
-  'projection.dt.range'='2026-01-01,NOW',
-  'projection.dt.format'='yyyy-MM-dd',
-  'storage.location.template'='s3://<bucket>/<prefix>experiment-enrollments/v1/integration=${integration}/dt=${dt}/'
-);
-```
-
-The same shape works for `audience-memberships` (`audience_id`, `audience_name`, `customer_id`) and `subscription-risk` (`customer_id`, `churn_risk`) - your delivered `SCHEMA.md` carries the exact DDL for each enabled feed.
-
-### Snowflake
-
-Create an external stage over the prefix (via a storage integration for the bucket), then an external table with `FILE_FORMAT = (TYPE = CSV SKIP_HEADER = 1)` and the `integration`/`dt` partition columns derived from the folder path.
-
-### BigQuery
-
-For Google Cloud Storage destinations. Columns are declared `STRING` in the delivered order; keep the ISO-8601 timestamp columns as `STRING` and parse at query time with `PARSE_TIMESTAMP('%FT%TZ', ...)`:
-
-```sql
-CREATE EXTERNAL TABLE `your_dataset.experiment_enrollments` (
-  `customer_id` STRING,
-  `experiment_id` STRING,
-  `experiment_name` STRING,
-  `variant_name` STRING,
-  `variant_type` STRING,
-  `is_suppressed` STRING,
-  `experiment_assignment` STRING,
-  `enrolled_at` STRING,
-  `unenrolled_at` STRING,
-  `exported_at` STRING
-)
-WITH PARTITION COLUMNS (`integration` STRING, `dt` DATE)
-OPTIONS (
-  format = 'CSV',
-  uris = ['gs://<bucket>/<prefix>experiment-enrollments/v1/*.csv.gz'],
-  hive_partition_uri_prefix = 'gs://<bucket>/<prefix>experiment-enrollments/v1/',
-  compression = 'GZIP',
-  skip_leading_rows = 1
-);
-```
-
-### Selecting the current snapshot
-
-Whatever the engine, select one integration's current snapshot by filtering to `integration = '<integration-key>'` and `dt = '<latest-dt>'`, where `<latest-dt>` is resolved by listing that integration's `dt=` folders and taking the newest carrying `_SUCCESS` - see [Reading the feed correctly](#reading-the-feed-correctly) for why a row-based `max(dt)` is wrong.
