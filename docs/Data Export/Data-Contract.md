@@ -91,18 +91,11 @@ One row per experiment × participant. Includes treatment, control, suppression/
 
 ### `exported_at` - the CRM receipt
 
-A row in this feed is an enrollment that happened in Subsets. Writing that assignment into your CRM is a separate, retried step that can fail on the CRM side (API errors, rate limits, a customer the CRM rejects), so the feed and your CRM can disagree. `exported_at` is the receipt:
+A row in this feed is an enrollment that happened in Subsets. Writing that assignment into your CRM is a separate, retried step that can fail on the CRM side (API errors, rate limits, a customer the CRM rejects), so the feed and your CRM can disagree. `exported_at` is the receipt: the last successful write of this customer's assignment in this experiment to your CRM. Empty means no write has ever landed - expected on control and suppression rows, which are never synced by design; on a treatment row it means your CRM does not know about this enrollment.
 
-- **Empty** - Subsets has never successfully written this customer's assignment to this CRM. Expected on control and suppression rows, which are never synced by design; on a treatment row it means your CRM does not know about this enrollment.
-- **Older than `enrolled_at`** - the CRM holds a value from an earlier push and has not caught up with this enrollment yet.
-
-It is a per-customer receipt, not per-subscription: two subscriptions of the same customer in one experiment carry the same `exported_at`. It records that the write succeeded, not that the CRM's value still matches this row today - someone editing the field in the CRM afterwards is invisible to Subsets.
+It is a per-customer receipt, not per-subscription: two subscriptions of the same customer in one experiment carry the same `exported_at` - which is also why it can occasionally predate `enrolled_at`, when an enrollment event is newer than the push that already delivered the assignment. It records that the write succeeded, not that the CRM's value still matches this row today - someone editing the field in the CRM afterwards is invisible to Subsets.
 
 Note that `experiment_assignment` is populated on every row in this feed, including control and suppression rows - but Subsets only writes `subsets_experiment_assignment` to your CRM for treatment participants. An equality join from this feed to that CRM column will therefore not match control rows: they exist here with no CRM counterpart.
-
-### `unenrolled_at` - expect it empty
-
-Expect `unenrolled_at` to be empty on essentially every row. Participants are no longer removed from an experiment when they act during the observation window - Subsets keeps them enrolled and handles the exclusion when it measures results instead. The column stays in the contract because unenrollment remains part of the model and may be populated again in future, so build against it - but do not read an empty column as "the feed is broken", and do not treat `unenrolled_at IS NULL` as a meaningful filter today: it matches everyone.
 
 ## Feed: audience-memberships
 
