@@ -18,7 +18,8 @@ Access is keyless and even simpler than S3: the Subsets service account writes t
 
 Any location and storage class, with **uniform bucket-level access** and public access prevention on. Pick an object prefix if desired - we recommend `subsets/`, and **it must end with `/`** (the delivery layout concatenates it directly).
 
-- Do **not** enable a retention policy or object holds, and do **not** enable Requester Pays - both break deliveries, because Subsets overwrites fixed object names (same-day re-runs, `_schema/SCHEMA.md`, the validation file).
+- A bucket **retention policy is supported**. Daily files are new objects and a retried delivery of an unchanged file is skipped, so routine delivery never trips the lock. The lock only delays rewriting an existing file with *changed* content - a same-day correction, an updated `_schema/SCHEMA.md`, re-validation after a destination change - until that file's retention expires. Tip: add the retention policy after validation passes.
+- Do **not** enable default object holds, and do **not** enable Requester Pays. Holds block file updates indefinitely; Requester Pays deliveries are refused because Subsets doesn't send a billing project.
 
 ## 2. Grant the Subsets service account access
 
