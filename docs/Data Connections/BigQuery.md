@@ -7,7 +7,7 @@ sidebar_position: 1
 Subsets supports syncing data from your BigQuery data warehouse.
 
 ## Setup guide
-1. Grant the service account provided by Subsets the roles: `roles/bigquery.dataViewer` and `roles/bigquery.user` (or the permission `bigquery.jobs.create`) on the tables or dataset.
+1. Grant the service account provided by Subsets the roles: `roles/bigquery.dataViewer` and `roles/bigquery.user` on the tables or dataset.
 2. If you are sharing data through Authorized views and the underlying tables are Partitioned, let us know the names of the partitioning columns.
 
 :::note
